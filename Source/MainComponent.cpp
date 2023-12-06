@@ -126,7 +126,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 
 	// generate string that indicates current level
 	std::stringstream s{};
-	if (!METER_SHOW_HISTORY) // attempt to block view of previous line if preferred
+	if (METER_HIDE_HISTORY) // attempt to block view of previous line if preferred
 		s << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
 	s << "  |";
 	for (int c = 0; c < METER_DISPLAY_SIZE; c++) {

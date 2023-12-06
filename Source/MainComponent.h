@@ -10,7 +10,7 @@
 // width of command line level meter in chars
 #define METER_DISPLAY_SIZE (60)
 // choose whether to only show current level or show previous levels as well
-#define METER_SHOW_HISTORY (false)
+#define METER_HIDE_HISTORY (false)
 
 
 //==============================================================================
