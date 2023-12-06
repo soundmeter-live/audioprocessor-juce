@@ -10,11 +10,11 @@
 #include "MainComponent.h"
 
 //==============================================================================
-class AudioInputTestApplication  : public juce::JUCEApplication
+class SoundMeterAudioProcessorApplication  : public juce::JUCEApplication
 {
 public:
     //==============================================================================
-    AudioInputTestApplication() {}
+    SoundMeterAudioProcessorApplication() {}
 
     const juce::String getApplicationName() override       { return ProjectInfo::projectName; }
     const juce::String getApplicationVersion() override    { return ProjectInfo::versionString; }
@@ -102,4 +102,4 @@ private:
 
 //==============================================================================
 // This macro generates the main() routine that launches the app.
-START_JUCE_APPLICATION (AudioInputTestApplication)
+START_JUCE_APPLICATION (SoundMeterAudioProcessorApplication)
