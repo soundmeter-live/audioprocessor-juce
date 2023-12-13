@@ -12,6 +12,8 @@
 // choose whether to only show current level or show previous levels as well
 #define METER_HIDE_HISTORY (false)
 
+#define AVG_NUM_BLOCKS (40)
+
 
 //==============================================================================
 /*
@@ -35,6 +37,9 @@ public:
 	void resized() override;
 
 private:
+
+	float sum_sq; // square sum of rms blocks
+	int block_count; // iterate over AVG_NUM_BLOCKS
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };

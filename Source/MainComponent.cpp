@@ -1,7 +1,7 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent()
+MainComponent::MainComponent() : sum_sq(0.0), block_count(0)
 {
 	// Make sure you set the size of the component after
 	// you add any child components.
@@ -115,13 +115,26 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 				{
 					// sum sample magnitude for block averaging
 					counter += fabsf(inBuffer[sample]);
+
+					sum_sq += powf(inBuffer[sample], 2.0);
 				}
 			}
 		}
 	}
 
+	// Right now we are not producing any data, in which case we need to clear the buffer
+	// (to prevent the output of random noise)
+	bufferToFill.clearActiveBufferRegion();
+
+	if (block_count++ < AVG_NUM_BLOCKS) {
+		return;
+	}
+
+	block_count = 0;
+
 	// get average level in this block and normalize it to desired CLI meter width
-	float level = (float)counter / (bufferToFill.numSamples * maxOutputChannels);
+	float level = (float)sum_sq / (bufferToFill.numSamples * maxOutputChannels) / AVG_NUM_BLOCKS;
+	level = sqrtf(level);
 	int dlevel = (int)roundf(level * METER_DISPLAY_SIZE);
 
 	// generate string that indicates current level
@@ -136,11 +149,6 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 	s << "  - " << level << " / " << dlevel;
 	// output to command line
 	DBG(s.str());
-
-
-	// Right now we are not producing any data, in which case we need to clear the buffer
-	// (to prevent the output of random noise)
-	bufferToFill.clearActiveBufferRegion();
 }
 
 void MainComponent::releaseResources()
