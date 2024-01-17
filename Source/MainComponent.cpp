@@ -133,8 +133,10 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 	block_count = 0;
 
 	// get average level in this block and normalize it to desired CLI meter width
-	float level = (float)sum_sq / (bufferToFill.numSamples * maxOutputChannels) / AVG_NUM_BLOCKS;
-	level = sqrtf(level);
+	float level = (float)sum_sq / (bufferToFill.numSamples * maxInputChannels * AVG_NUM_BLOCKS) / AVG_NUM_BLOCKS;
+	level = sqrtf(level) * 2;
+	if (level > 1.0) level = 1.0;
+	sum_sq = 0.0;
 	int dlevel = (int)roundf(level * METER_DISPLAY_SIZE);
 
 	// generate string that indicates current level
@@ -146,7 +148,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 		if (c < dlevel) s << "=";
 		else s << " ";
 	}
-	s << "  - " << level << " / " << dlevel;
+	s << "  - " << level << " / " << 20.0 * log10f(level) << "dB";
 	// output to command line
 	DBG(s.str());
 }

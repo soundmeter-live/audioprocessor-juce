@@ -12,7 +12,7 @@
 // choose whether to only show current level or show previous levels as well
 #define METER_HIDE_HISTORY (false)
 
-#define AVG_NUM_BLOCKS (40)
+#define AVG_NUM_BLOCKS (8)
 
 
 //==============================================================================
