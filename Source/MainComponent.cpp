@@ -1,8 +1,11 @@
 #include "MainComponent.h"
 
 //==============================================================================
-MainComponent::MainComponent() : sum_sq(0.0), block_count(0)
+MainComponent::MainComponent() : sum_sq(0.0), block_count(0), fifoIndex(0), nextFFTBlockReady(false)
 {
+    
+    forwardFFT = new juce::dsp::FFT(LEVEL_METER_SIZE);
+    backwardFFT = new juce::dsp::FFT(LEVEL_METER_SIZE);
 	// Make sure you set the size of the component after
 	// you add any child components.
 	setSize(1, 1);
@@ -80,6 +83,68 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
 	//
 }
 
+void MainComponent::pushNextSampleIntoFifo(float sample)
+    {
+        // if the fifo contains enough data, set a flag to say
+        // that the next line should now be rendered..
+        if(fifoIndex == LEVEL_METER_SIZE)
+        {
+            if(!nextFFTBlockReady)
+            {
+                std::fill(fftData.begin(), fftData.end(), 0.0f);
+                std::copy(fifo.begin(), fifo.end(), fftData.begin());
+                nextFFTBlockReady = true;
+            }
+            fifoIndex = 0;
+        }
+        fifo[(size_t) fifoIndex++] = sample;
+    }
+
+// print and save the metering level
+void MainComponent::dBmeter(std::string type){
+    float p0 = 20e-6;
+    if(type == "A-Weighting"){
+//        DBG(aWeighting());
+        aWeighting();
+        float weighted_dB = 20.0 * std::log10(calculateRMS() / p0);
+        DBG(weighted_dB);
+//        DBG(1);
+    }
+    else if(type == "SPL"){
+        float spldB = 20.0 * std::log10(calculateRMS() / p0);
+        DBG(spldB);
+    }
+}
+
+float MainComponent::aWeighting(){
+    forwardFFT->performFrequencyOnlyForwardTransform(fftData.data(), true);
+
+    float sum = 0;
+    for(int i = 0; i < LEVEL_METER_SIZE; i++){
+        
+        float frequency = deviceManager.getCurrentAudioDevice()->getCurrentSampleRate()/2 * i / LEVEL_METER_SIZE;
+        float f2 = frequency * frequency;
+        float level = 1.2588966 * 148840000 * f2*f2 /
+            ((f2 + 424.36) * std::sqrt((f2 + 11599.29) * (f2 + 544496.41)) * (f2 + 148840000));
+//        sum += level * fabsf(fftData[i]);
+        fftData[i] *= level;
+        sum += fftData[i];
+    }
+    sum /= LEVEL_METER_SIZE;
+    return 20 * std::log(sum) / std::log(10);
+}
+
+float MainComponent::calculateRMS(){
+    float sumSquares = 0.0;
+
+    for(float sample : fftData) {
+        sumSquares += sample * sample;
+    }
+    float rmsValue = std::sqrt(sumSquares / LEVEL_METER_SIZE);
+
+    return rmsValue;
+}
+
 // Your audio-processing code goes here!
 void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& bufferToFill)
 {
@@ -113,10 +178,14 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 				/* SAMPLE PROCESSING LOOP */
 				for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
 				{
+                    pushNextSampleIntoFifo (inBuffer[sample]);
+                    if(nextFFTBlockReady){
+                        dBmeter("A-Weighting");
+                        nextFFTBlockReady = false;
+                    }
 					// sum sample magnitude for block averaging
-					counter += fabsf(inBuffer[sample]);
-
-					sum_sq += powf(inBuffer[sample], 2.0);
+//					counter += fabsf(inBuffer[sample]);
+//					sum_sq += powf(inBuffer[sample], 2.0);
 				}
 			}
 		}
@@ -130,27 +199,27 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 		return;
 	}
 
-	block_count = 0;
-
-	// get average level in this block and normalize it to desired CLI meter width
-	float level = (float)sum_sq / (bufferToFill.numSamples * maxInputChannels * AVG_NUM_BLOCKS) / AVG_NUM_BLOCKS;
-	level = sqrtf(level) * 2;
-	if (level > 1.0) level = 1.0;
-	sum_sq = 0.0;
-	int dlevel = (int)roundf(level * METER_DISPLAY_SIZE);
-
-	// generate string that indicates current level
-	std::stringstream s{};
-	if (METER_HIDE_HISTORY) // attempt to block view of previous line if preferred
-		s << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
-	s << "  |";
-	for (int c = 0; c < METER_DISPLAY_SIZE; c++) {
-		if (c < dlevel) s << "=";
-		else s << " ";
-	}
-	s << "  - " << level << " / " << 20.0 * log10f(level) << "dB";
-	// output to command line
-	DBG(s.str());
+//	block_count = 0;
+//
+//	// get average level in this block and normalize it to desired CLI meter width
+//	float level = (float)sum_sq / (bufferToFill.numSamples * maxInputChannels * AVG_NUM_BLOCKS) / AVG_NUM_BLOCKS;
+//	level = sqrtf(level) * 2;
+//	if (level > 1.0) level = 1.0;
+//	sum_sq = 0.0;
+//	int dlevel = (int)roundf(level * METER_DISPLAY_SIZE);
+//
+//	// generate string that indicates current level
+//	std::stringstream s{};
+//	if (METER_HIDE_HISTORY) // attempt to block view of previous line if preferred
+//		s << "\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n";
+//	s << "  |";
+//	for (int c = 0; c < METER_DISPLAY_SIZE; c++) {
+//		if (c < dlevel) s << "=";
+//		else s << " ";
+//	}
+//	s << "  - " << level << " / " << 20.0 * log10f(level) << "dB";
+//	// output to command line
+//	DBG(s.str());
 }
 
 void MainComponent::releaseResources()
