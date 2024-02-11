@@ -3,14 +3,14 @@
 <JUCERPROJECT id="pSnsKA" name="SoundMeterAudioProcessor" projectType="guiapp"
               useAppConfig="0" addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1"
               companyWebsite="soundmeter.live" companyName="soundmeter.live"
-              displaySplashScreen="1">
+              displaySplashScreen="1" headerPath="../../include&#10;">
   <MAINGROUP id="aZkpR1" name="SoundMeterAudioProcessor">
     <GROUP id="{87635139-A4CA-2BDD-2B5C-B7BE67FFE85C}" name="Source">
-      <FILE id="bR5nzU" name="json.hpp" compile="0" resource="0" file="Source/json.hpp"/>
+      <FILE id="g8ADc2" name="DataUploader.h" compile="0" resource="0" file="Source/DataUploader.h"/>
       <FILE id="QM0lwe" name="Main.cpp" compile="1" resource="0" file="Source/Main.cpp"/>
-      <FILE id="IiSC5u" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
       <FILE id="yQ4gJu" name="MainComponent.cpp" compile="1" resource="0"
             file="Source/MainComponent.cpp"/>
+      <FILE id="IiSC5u" name="MainComponent.h" compile="0" resource="0" file="Source/MainComponent.h"/>
     </GROUP>
   </MAINGROUP>
   <MODULES>
