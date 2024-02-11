@@ -25,10 +25,12 @@ public:
     {
         // convert data map to json format
         for (const auto& [time, value] : points) {
-            this->points.push_back({
-                { "timeAt", time },
-                { "value", value }
-                });
+            this->points.push_back(
+                {
+                    { "timeAt", time },
+                    { "value", value }
+                }
+            );
         }
 
         // start the run() method in a separate thread
