@@ -10,6 +10,7 @@ MainComponent::MainComponent() : sum_sq(0.0), block_count(0), fifoIndex(0), next
 	// you add any child components.
 	setSize(1, 1);
 	setVisible(false);
+    level_type = "A-Weighting";
 
 	// Some platforms require permissions to open input channels so request that here
 	if (juce::RuntimePermissions::isRequired(juce::RuntimePermissions::recordAudio)
@@ -106,13 +107,13 @@ void MainComponent::dBmeter(std::string type){
     if(type == "A-Weighting"){
 //        DBG(aWeighting());
         aWeighting();
-        float weighted_dB = 20.0 * std::log10(calculateRMS() / p0);
-        DBG(weighted_dB);
+        level = 20.0 * std::log10(calculateRMS() / p0);
+        DBG(level);
 //        DBG(1);
     }
     else if(type == "SPL"){
-        float spldB = 20.0 * std::log10(calculateRMS() / p0);
-        DBG(spldB);
+        level = 20.0 * std::log10(calculateRMS() / p0);
+        DBG(level);
     }
 }
 
@@ -137,12 +138,21 @@ float MainComponent::aWeighting(){
 float MainComponent::calculateRMS(){
     float sumSquares = 0.0;
 
-    for(float sample : fftData) {
+    for(float sample : fftData){
         sumSquares += sample * sample;
     }
     float rmsValue = std::sqrt(sumSquares / LEVEL_METER_SIZE);
 
     return rmsValue;
+}
+
+void MainComponent::writeData(){
+    // NEED TO WORK ON WRITING FREQUENCY
+    data["meter type"] = level_type;
+    data["level"] = level;
+    std::ofstream file(WRITE_PATH);
+    file << std::setw(4) << data << std::endl;
+    file.close();
 }
 
 // Your audio-processing code goes here!
@@ -180,7 +190,11 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 				{
                     pushNextSampleIntoFifo (inBuffer[sample]);
                     if(nextFFTBlockReady){
-                        dBmeter("A-Weighting");
+                        dBmeter(level_type);
+                        if (block_count++ < AVG_NUM_BLOCKS) {
+                            writeData();
+                            block_count = 0;
+                        }
                         nextFFTBlockReady = false;
                     }
 					// sum sample magnitude for block averaging
@@ -195,9 +209,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 	// (to prevent the output of random noise)
 	bufferToFill.clearActiveBufferRegion();
 
-	if (block_count++ < AVG_NUM_BLOCKS) {
-		return;
-	}
+	
 
 //	block_count = 0;
 //

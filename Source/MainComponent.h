@@ -1,6 +1,8 @@
 #pragma once
 
 #include <JuceHeader.h>
+#include <fstream>
+#include "json.hpp"
 
 /* CONSTANTS: */
 
@@ -15,8 +17,9 @@
 #define METER_HIDE_HISTORY (false)
 
 #define AVG_NUM_BLOCKS (8)
-
 #define LEVEL_METER_SIZE (1024)
+#define WRITE_PATH ("/Users/cooper/Documents/senior_design/audioprocessor-juce/data/data.json")
+using json = nlohmann::json;
 
 
 //==============================================================================
@@ -45,6 +48,9 @@ public:
     float aWeighting();
     void pushNextSampleIntoFifo (float sample);
     float calculateRMS();
+    
+    //==============================================================================
+    void writeData();
 
 private:
 
@@ -56,6 +62,10 @@ private:
     juce::dsp::FFT * backwardFFT;
     std::array<float, LEVEL_METER_SIZE> fifo;                    // [4]
     std::array<float, LEVEL_METER_SIZE> fftData;
+    float level;
+    std::string level_type;
+    json data;
+    
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
