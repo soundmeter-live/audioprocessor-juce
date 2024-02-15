@@ -20,7 +20,7 @@ class DataUploader : private juce::Thread {
     using json = nlohmann::json;
 
 public:
-    DataUploader(const std::map<int, float>& points) :
+    DataUploader(const std::map<juce::int64, float>& points) :
         juce::Thread("DataUploader"), points(json::array()), succeeded{}, error{}
     {
         // convert data map to json format
@@ -108,8 +108,8 @@ public:
     juce::String getError()const { return this->error; }
 
     /** [STATIC UTILITY] get the current time in seconds */
-    static inline int timeNow() {
-        return (int)(juce::Time().currentTimeMillis() / 1000.0);
+    static inline juce::int64 timeNow() {
+        return juce::Time().currentTimeMillis();
     }
 
 private:
