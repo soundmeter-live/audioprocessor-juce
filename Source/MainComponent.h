@@ -11,15 +11,16 @@
 //#define DEVICE_TYPE "Windows Audio"
 #define DEVICE_TYPE "CoreAudio"
 //#define DEVICE_NAME "Microphone (Conexant HD Audio)"
-#define DEVICE_NAME "Pro Tools Aggregate I/O"
+//#define DEVICE_NAME "Pro Tools Aggregate I/O"
+#define DEVICE_NAME "Teensy MIDI_Audio"
 // width of command line level meter in chars
 #define METER_DISPLAY_SIZE (60)
 // choose whether to only show current level or show previous levels as well
 #define METER_HIDE_HISTORY (false)
 
 #define LEVEL_METER_SIZE (1024)  // sample block size
-#define AVG_NUM_BLOCKS (40)      // number of sample blocks to average per uploaded data point
-#define POINTS_PER_UPLOAD (30)   // number of data points to upload together
+#define AVG_NUM_BLOCKS (80)      // number of sample blocks to average per uploaded data point
+#define POINTS_PER_UPLOAD (15)   // number of data points to upload together
 #define SPL_CALIBRATION (100)    // mic calibration in dBSPL (offset for weighted dbFS values)
 
 #define WRITE_PATH ("/Users/cooper/Documents/senior_design/audioprocessor-juce/data/data.json")

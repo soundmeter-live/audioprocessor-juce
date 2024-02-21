@@ -177,7 +177,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     auto maxOutputChannels = activeOutputChannels.getHighestBit() + 1;
 
 
-    for (auto channel = 0; channel < maxOutputChannels; ++channel)
+    for (auto channel = 0; channel < 1; ++channel)
     {
         // clear any unused buffer data
         if ((!activeOutputChannels[channel]) || maxInputChannels == 0)
