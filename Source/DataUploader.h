@@ -66,7 +66,7 @@ public:
 
             // handle success
             if (status == 200) {
-                DBG("\n\nsuccessfully uploaded new data\n\n");
+                DBG("successfully uploaded new data");
                 juce::MessageManagerLock mml(this);
                 if (mml.lockWasGained()) {
                     this->succeeded = true;
@@ -78,6 +78,8 @@ public:
             juce::MessageManagerLock mml(this);
             if (mml.lockWasGained()) {
                 this->error = response.dump(2);
+                DBG("error uploading!");
+                DBG(this->error);
             }
             return;
         }
@@ -89,6 +91,8 @@ public:
             if (status) s << "Unknown error, status " << status;
             else s << "Failed to connect";
             this->error = s.str();
+            DBG("error uploading!");
+            DBG(this->error);
         }
     }
 
@@ -105,7 +109,7 @@ public:
         if (this->error.length()) return Status::ERROR;
         return Status::PENDING;
     }
-    juce::String getError()const { return this->error; }
+    juce::String getError() const { return this->error; }
 
     /** [STATIC UTILITY] get the current time in seconds */
     static inline juce::int64 timeNow() {
