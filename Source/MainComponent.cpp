@@ -109,12 +109,12 @@ void MainComponent::dBmeter(std::string type){
 //        DBG(aWeighting());
         aWeighting();
         level = 20.0 * std::log10(calculateRMS() / p0);
-        DBG(level);
+//        DBG(level);
 //        DBG(1);
     }
     else if(type == "SPL"){
         level = 20.0 * std::log10(calculateRMS() / p0);
-        DBG(level);
+//        DBG(level);
     }
 }
 
@@ -153,12 +153,12 @@ void MainComponent::writeData(){
         avg_block_level += block_buffer[i];
     }
     avg_block_level /= block_buffer.size();
-    
     upload_buffer[DataUploader::timeNow()] = avg_block_level;
     
     avg_block_count++;
     if (avg_block_count == POINTS_PER_UPLOAD){
         upLoad();
+        avg_block_count = 0;
     }
 }
 

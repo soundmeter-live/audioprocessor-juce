@@ -70,7 +70,7 @@ private:
     std::string level_type;
     json data;
     std::array<float, AVG_NUM_BLOCKS> block_buffer;
-    std::map<int, float> upload_buffer;
+    std::map<juce::int64, float> upload_buffer;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
