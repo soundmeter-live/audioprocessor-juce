@@ -11,6 +11,7 @@ MainComponent::MainComponent() : sum_sq(0.0), block_count(0), fifoIndex(0), next
 	setSize(1, 1);
 	setVisible(false);
     level_type = "A-Weighting";
+    avg_block_count = 0;
 
 	// Some platforms require permissions to open input channels so request that here
 	if (juce::RuntimePermissions::isRequired(juce::RuntimePermissions::recordAudio)
@@ -147,12 +148,23 @@ float MainComponent::calculateRMS(){
 }
 
 void MainComponent::writeData(){
-    // NEED TO WORK ON WRITING FREQUENCY
-    data["meter type"] = level_type;
-    data["level"] = level;
-    std::ofstream file(WRITE_PATH);
-    file << std::setw(4) << data << std::endl;
-    file.close();
+    float avg_block_level = 0;
+    for(int i = 0; i < block_buffer.size(); i++){
+        avg_block_level += block_buffer[i];
+    }
+    avg_block_level /= block_buffer.size();
+    
+    upload_buffer[DataUploader::timeNow()] = avg_block_level;
+    
+    avg_block_count++;
+    if (avg_block_count == POINTS_PER_UPLOAD){
+        upLoad();
+    }
+}
+
+void MainComponent::upLoad(){
+    DataUploader upload(upload_buffer);
+    upload_buffer.clear();
 }
 
 // Your audio-processing code goes here!
@@ -165,8 +177,6 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
 	auto maxInputChannels = activeInputChannels.getHighestBit() + 1;
 	auto maxOutputChannels = activeOutputChannels.getHighestBit() + 1;
 
-	// sample counter for level averaging later
-	float counter = 0.0;
 
 	for (auto channel = 0; channel < maxOutputChannels; ++channel)
 	{
@@ -191,9 +201,11 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
                     pushNextSampleIntoFifo (inBuffer[sample]);
                     if(nextFFTBlockReady){
                         dBmeter(level_type);
-                        if (block_count++ < AVG_NUM_BLOCKS) {
-                            writeData();
+                        block_buffer[block_count++] = level;
+                        
+                        if (block_count == AVG_NUM_BLOCKS) {
                             block_count = 0;
+                            writeData();
                         }
                         nextFFTBlockReady = false;
                     }

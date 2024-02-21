@@ -2,7 +2,8 @@
 
 #include <JuceHeader.h>
 #include <fstream>
-#include "json.hpp"
+#include <nlohmann/json.hpp>
+#include "DataUploader.h"
 
 /* CONSTANTS: */
 
@@ -16,7 +17,8 @@
 // choose whether to only show current level or show previous levels as well
 #define METER_HIDE_HISTORY (false)
 
-#define AVG_NUM_BLOCKS (8)
+#define AVG_NUM_BLOCKS (40)
+#define POINTS_PER_UPLOAD (30)
 #define LEVEL_METER_SIZE (1024)
 #define WRITE_PATH ("/Users/cooper/Documents/senior_design/audioprocessor-juce/data/data.json")
 using json = nlohmann::json;
@@ -51,11 +53,13 @@ public:
     
     //==============================================================================
     void writeData();
+    void upLoad();
 
 private:
 
 	float sum_sq; // square sum of rms blocks
 	int block_count; // iterate over AVG_NUM_BLOCKS
+    int avg_block_count;
     int fifoIndex;
     bool nextFFTBlockReady;
     juce::dsp::FFT * forwardFFT;
@@ -65,7 +69,8 @@ private:
     float level;
     std::string level_type;
     json data;
-    
+    std::array<float, AVG_NUM_BLOCKS> block_buffer;
+    std::map<int, float> upload_buffer;
 
 	JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(MainComponent)
 };
