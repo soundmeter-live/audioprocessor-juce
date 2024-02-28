@@ -85,21 +85,31 @@ void MainComponent::prepareToPlay(int samplesPerBlockExpected, double sampleRate
     //
 }
 
-void MainComponent::pushNextSampleIntoFifo(float sample)
+void MainComponent::pushNextSampleIntoFifo(float sample, int channel_idx)
 {
     // if the fifo contains enough data, set a flag to say
     // that the next line should now be rendered..
-    if (fifoIndex == LEVEL_METER_SIZE)
+    if(fifoIndex == LEVEL_METER_SIZE and channel_idx == (AVG_NUM_CHANNELS-1))
     {
-        if (!nextFFTBlockReady)
+        if(!nextFFTBlockReady)
         {
             std::fill(fftData.begin(), fftData.end(), 0.0f);
             std::copy(fifo.begin(), fifo.end(), fftData.begin());
             nextFFTBlockReady = true;
         }
         fifoIndex = 0;
+        fifo[(size_t) fifoIndex++] = sample/AVG_NUM_CHANNELS;
     }
-    fifo[(size_t)fifoIndex++] = sample;
+    else if(fifoIndex == LEVEL_METER_SIZE and channel_idx != (AVG_NUM_CHANNELS-1)){
+        fifoIndex = 0;
+        fifo[(size_t) fifoIndex++] += (sample/AVG_NUM_CHANNELS);
+    }
+    else if(channel_idx != 0){
+        fifo[(size_t) fifoIndex++] += (sample/AVG_NUM_CHANNELS);
+    }
+    else{
+        fifo[(size_t) fifoIndex++] = (sample/AVG_NUM_CHANNELS);
+    }
 }
 
 // print and save the metering level
@@ -177,7 +187,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
     auto maxOutputChannels = activeOutputChannels.getHighestBit() + 1;
 
 
-    for (auto channel = 0; channel < 1; ++channel)
+    for (auto channel = 0; channel < AVG_NUM_CHANNELS; ++channel)
     {
         // clear any unused buffer data
         if ((!activeOutputChannels[channel]) || maxInputChannels == 0)
@@ -197,7 +207,7 @@ void MainComponent::getNextAudioBlock(const juce::AudioSourceChannelInfo& buffer
                 /* SAMPLE PROCESSING LOOP */
                 for (auto sample = 0; sample < bufferToFill.numSamples; ++sample)
                 {
-                    pushNextSampleIntoFifo(inBuffer[sample]);
+                    pushNextSampleIntoFifo(inBuffer[sample], channel);
                     if (nextFFTBlockReady) {
                         // calculate dB values
                         dBmeter(level_type);

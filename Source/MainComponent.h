@@ -18,6 +18,7 @@
 // choose whether to only show current level or show previous levels as well
 #define METER_HIDE_HISTORY (false)
 
+#define AVG_NUM_CHANNELS (2)
 #define LEVEL_METER_SIZE (1024)  // sample block size
 #define AVG_NUM_BLOCKS (80)      // number of sample blocks to average per uploaded data point
 #define POINTS_PER_UPLOAD (15)   // number of data points to upload together
@@ -51,7 +52,7 @@ public:
     //==============================================================================
     void dBmeter(std::string type);
     float aWeighting();
-    void pushNextSampleIntoFifo(float sample);
+    void pushNextSampleIntoFifo(float sample, int channel_idx);
     float calculateRMS();
 
     //==============================================================================
